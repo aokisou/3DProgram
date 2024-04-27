@@ -56,6 +56,9 @@ private:
 
 	//ポリゴンデータ
 	std::shared_ptr<KdSquarePolygon> m_spPoly = nullptr;
+	Math::Matrix m_mHamuWorld = Math::Matrix::Identity;
+
+	Math::Vector3 m_pos = {};
 
 	float m_z;
 

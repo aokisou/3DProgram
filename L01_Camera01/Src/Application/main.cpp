@@ -68,7 +68,6 @@ void Application::Update()
 	//カメラ行列の更新
 	{
 		//カメラのワールド行列を作成
-		{
 			//static float _x = 0, _y = 0, _z = 0;
 			//if (GetAsyncKeyState(VK_UP) & 0x8000){_y += 0.1f;}
 			//if (GetAsyncKeyState(VK_DOWN) & 0x8000){_y -= 0.1f;}
@@ -89,19 +88,53 @@ void Application::Update()
 			//						Math::Matrix::CreateRotationZ(DirectX::XMConvertToRadians(_rZ)) * 
 			//						Math::Matrix::CreateTranslation(_x, _y, _z);
 
-			static float _y = 0.0f;
-			_y -= 0.1f;
-			//大きさ
-			Math::Matrix _mScale = Math::Matrix::CreateScale(1);
-			//どれだけ傾いているか
-			Math::Matrix _mRotationX = Math::Matrix::CreateRotationX(DirectX::XMConvertToRadians(45));
-			Math::Matrix _mRotationY = Math::Matrix::CreateRotationY(DirectX::XMConvertToRadians(_y));
-			//基準点(ターゲット)からどれだけ離れているか
-			Math::Matrix _mTrans = Math::Matrix::CreateTranslation(0, 6, -5);
+		static float _y = 0.0f;
+		//_y -= 0.1f;
+		//大きさ
+		Math::Matrix _mScale = Math::Matrix::CreateScale(1);
+		//どれだけ傾いているか
+		Math::Matrix _mRotationX = Math::Matrix::CreateRotationX(DirectX::XMConvertToRadians(45));
+		Math::Matrix _mRotationY = Math::Matrix::CreateRotationY(DirectX::XMConvertToRadians(_y));
+		//基準点(ターゲット)からどれだけ離れているか
+		Math::Matrix _mTrans = Math::Matrix::CreateTranslation(0, 6, -5);
 
-			Math::Matrix _mWorld = _mScale * _mRotationX * _mTrans * _mRotationY;
-			m_spCamera->SetCameraMatrix(_mWorld);
+		Math::Matrix _mWorld = _mScale * _mRotationX * _mTrans * _mRotationY * m_mHamuWorld;
+		m_spCamera->SetCameraMatrix(_mWorld);
+	}
+
+	//ハム太郎の更新
+	{
+		float moveSpd = 0.05f;
+		Math::Vector3 nowPos = m_mHamuWorld.Translation();
+		Math::Vector3 moveVec = Math::Vector3::Zero;
+
+		if (GetAsyncKeyState('W'))
+		{
+			moveVec.z = 1.0f;
+			//m_pos.z += 0.1f;
 		}
+		if (GetAsyncKeyState('A'))
+		{
+			moveVec.x = -1.0f;
+			//m_pos.x -= 0.1f;
+		}
+		if (GetAsyncKeyState('S'))
+		{
+			moveVec.z = -1.0f;
+			//m_pos.z -= 0.1f;
+		}
+		if (GetAsyncKeyState('D'))
+		{
+			moveVec.x = 1.0f;
+			//m_pos.x += 0.1f;
+		}
+
+		moveVec *= moveSpd;
+		nowPos += moveVec;
+
+		//キャラクターのワールド行列を作成
+		//m_mHamuWorld = Math::Matrix::CreateTranslation(m_pos);
+		m_mHamuWorld = Math::Matrix::CreateTranslation(nowPos);
 	}
 }
 
@@ -160,8 +193,7 @@ void Application::Draw()
 	KdShaderManager::Instance().m_StandardShader.BeginLit();
 	{
 		//Math::Matrix _mat = Math::Matrix::CreateTranslation(0,0,((abs)(sin(m_z)) * 0.97f + 0.03f) * 100);
-		Math::Matrix _mat = Math::Matrix::Identity;
-		KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_spPoly,_mat);
+		KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_spPoly,m_mHamuWorld);
 		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_spModel);
 	}
 	KdShaderManager::Instance().m_StandardShader.EndLit();
